@@ -8,19 +8,19 @@ app = FastAPI(
     version="1.0.0"
 )
 
-ASSETS_DIR = os.path.join(os.path.dirname(__file__), 'assets')
-os.makedirs(ASSETS_DIR, exist_ok=True)
+ASSETS_DIR = "assets"
+DEFAULT_IMAGE_PATH = os.path.join(ASSETS_DIR, "image.png")
 
-@app.post("/yolo")
-async def yolo_detect(file: UploadFile = File(...)):
-    # Guardar la imagen en assets
-    file_location = os.path.join(ASSETS_DIR, file.filename)
-    contents = await file.read()
-    with open(file_location, "wb") as f:
-        f.write(contents)
-    # Procesar la imagen
+@app.get("/yolo")
+async def yolo_detect():
+    if not os.path.exists(DEFAULT_IMAGE_PATH):
+        return {"error": "Imagen no encontrada."}
+
+    with open(DEFAULT_IMAGE_PATH, "rb") as f:
+        contents = f.read()
+
     detections = detect_objects(contents)
-    return {"filename": file.filename, "detections": detections}
+    return {"filename": os.path.basename(DEFAULT_IMAGE_PATH), "detections": detections}
 
 @app.get("/")
 async def read_root():

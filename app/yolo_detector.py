@@ -19,6 +19,7 @@ import io
 # 3) Aquí cargamos el modelo con el monkey-patch activo
 model = YOLO('yolov8s')
 
+print(model.names)
 
 def detect_objects(image_bytes: bytes) -> List[Dict]:
     """
