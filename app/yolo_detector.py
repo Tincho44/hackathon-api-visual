@@ -17,7 +17,7 @@ from PIL import Image
 import io
 
 # 3) Aquí cargamos el modelo con el monkey-patch activo
-model = YOLO('yolov8s')
+model = YOLO('./models/best.pt')
 
 print(model.names)
 

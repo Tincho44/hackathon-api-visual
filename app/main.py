@@ -9,7 +9,7 @@ app = FastAPI(
 )
 
 ASSETS_DIR = "assets"
-DEFAULT_IMAGE_PATH = os.path.join(ASSETS_DIR, "image.png")
+DEFAULT_IMAGE_PATH = os.path.join(ASSETS_DIR, "image2.png")
 
 @app.get("/yolo")
 async def yolo_detect():
