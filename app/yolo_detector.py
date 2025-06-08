@@ -19,8 +19,6 @@ import io
 # 3) Aquí cargamos el modelo con el monkey-patch activo
 model = YOLO('./models/best.pt')
 
-print(model.names)
-
 def detect_objects(image_bytes: bytes) -> List[Dict]:
     """
     Recibe una imagen en bytes y retorna una lista de objetos detectados.
@@ -30,7 +28,7 @@ def detect_objects(image_bytes: bytes) -> List[Dict]:
       - box: [x1, y1, x2, y2]
     """
     image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-    results = model(image)
+    results = model(image, verbose=False)
 
     detections: List[Dict] = []
     for result in results:
