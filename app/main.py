@@ -45,8 +45,8 @@ def main():
             label = f"{det['class']} {det['confidence']:.2f}"
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0,255,0), 2)
             cv2.putText(frame, label, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
-            # if det['confidence'] > 0.5:
-            #     push_notfication(det['class'])
+            if det['confidence'] > 0.5:
+                push_notfication(det['class'])
 
         cv2.imshow('YOLO Camera', frame)
 
@@ -57,19 +57,27 @@ def main():
     cap.release()
     cv2.destroyAllWindows()
 
+def send_notification_async(message):
+    """Función auxiliar para enviar notificación en hilo separado"""
+    url = "https://snapper-driven-calf.ngrok-free.app/query"
+    print(f"Sending notification for {message}")
+    data = {
+        "text": "OnEn la planta A de una compania, a las 10:00 AM del 07 de junio de 2025, se detectó a un trabajador sin casco de seguridad durante actividades de trasvase de metacrilato de metilo (MMA). Esta sustancia es un líquido incoloro, volátil, altamente inflamable (H225) y con vapores que pueden causar intoxicación por inhalación (H333), irritación respiratoria (H335) y reacciones alérgicas en la piel (H317). El proceso implica conexiones a presión entre cisterna y tanque, y en caso de fallas o fugas, existe riesgo de explosión, incendio y proyección de elementos metálicos. La ausencia de casco expone al trabajador a traumatismos craneales por caída de herramientas, desconexiones accidentales o explosiones. Considerando las medidas establecidas para accidentes químicos y riesgos mecánicos, ¿qué protocolo de seguridad y respuesta inmediata debería haberse activado en este caso? Incluir recomendaciones de confinamiento, evacuación, uso de EPP y control ambiental según las normativas indicadas en los documentos técnicos y de seguridad provistos.",
+        "document_name": None
+    }
+    try:
+        requests.post(url, json=data, timeout=10)
+    except Exception as e:
+        print(f"Error sending notification: {e}")
+
 def push_notfication(message):
     global last_notification_time
     now = time.time()
     # Count detections
     detection_counts[message] = detection_counts.get(message, 0) + 1
     if detection_counts[message] >= 3 and now - last_notification_time >= 60:
-        url = "https://2024-190-64-83-194.ngrok-free.app/query"
-        print(f"Sending notification for {message}")
-        data = {
-            "document_name": None,
-            "text": """OnEn la planta A de BASF, a las 10:00 AM del 07 de junio de 2025, se detectó a un trabajador sin casco de seguridad durante actividades de trasvase de metacrilato de metilo (MMA). Esta sustancia es un líquido incoloro, volátil, altamente inflamable (H225) y con vapores que pueden causar intoxicación por inhalación (H333), irritación respiratoria (H335) y reacciones alérgicas en la piel (H317). El proceso implica conexiones a presión entre cisterna y tanque, y en caso de fallas o fugas, existe riesgo de explosión, incendio y proyección de elementos metálicos. La ausencia de casco expone al trabajador a traumatismos craneales por caída de herramientas, desconexiones accidentales o explosiones. Considerando las medidas establecidas para accidentes químicos y riesgos mecánicos, ¿qué protocolo de seguridad y respuesta inmediata debería haberse activado en este caso? Incluir recomendaciones de confinamiento, evacuación, uso de EPP y control ambiental según las normativas indicadas en los documentos técnicos y de seguridad provistos."""
-        }
-        requests.post(url, data=data)
+        notification_thread = threading.Thread(target=send_notification_async, args=(message,), daemon=True)
+        notification_thread.start()
         last_notification_time = now
         detection_counts[message] = 0  # Reset count after notification
 
